@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+
 from .logger_conf import LOGGING
 
 BASE_DIR = Path(__file__).resolve().parent.parent
