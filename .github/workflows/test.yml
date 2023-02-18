@@ -1,0 +1,33 @@
+name: CI result
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: [3.8, 3.9, '3.10']        
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python3.(8/9/10)
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.version }}
+      - name: Install MyPy & flake8
+        run: |
+          pip3 install lxml mypy wemake-python-styleguide flake8-html types-requests types-pytz types-python-dateutil
+      - name: Install app dependencies
+        run: |
+          pip3 install $(grep -v '^ *#\|^uwsgi' requirements.txt | grep .)
+      - name: Run mypy
+        run: |
+          mypy app/ --ignore-missing-imports --no-strict-optional --exclude /migrations/ --exclude /tests/ --disable-error-code=attr-defined
+
+      - name: Run flake8
+        run: |
+          flake8 app/ --show-source

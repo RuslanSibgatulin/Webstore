@@ -1,0 +1,33 @@
+{% load static %}
+
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	  <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet"/>
+    
+    <title>Stripe test</title>
+  </head>
+  <body>
+      <div class="row">
+          {% include "navbar.html" %}
+      </div>
+
+      {% if messages %}
+      <div class="row bg-light m-2">
+        <ul class="messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <div class="row">
+          {% block content %}
+          {% endblock %}
+      </div>
+    </div>
+  </body>
+</html>

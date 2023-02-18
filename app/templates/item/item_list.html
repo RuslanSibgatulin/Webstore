@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+{% load item_extras %}
+
+<div class="row py-lg-3 text-center">
+  <h1 class="fw-light">Items</h1>
+  <p class="lead text-muted">Сhoose your preferred product</p>
+</div>
+
+  <div class="album py-6 bg-light">
+    <div class="container">
+        {% if not items %}
+            <p>Nothing found</p>
+        {% else %}
+        <div class="row row-cols-1 row-cols-sm-3 row-cols-md-5 g-2">
+            {% for item in items %}
+              <div class="col">
+                <div class="card mb-3 rounded-3 shadow-sm">
+                  <div class="card-header py-3">
+                    <h4 class="my-0 fw-normal">{{ item.name }}</h4>
+                  </div>
+                  <div class="card-body">
+                  <h2 class="card-title pricing-card-title">₽{{ item.price | divide:100 | floatformat:2}}</h2>
+                  <p>{{ item.description }}</p>
+                  <a href={% url "items:item-detail" item.pk %} class="stretched-link"></a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+        </div>
+        {% include "pagination.html" %}
+        {% endif %}
+    </div>
+  </div>
+
+{% endblock content %}
