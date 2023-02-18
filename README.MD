@@ -1,4 +1,4 @@
-# Goods Payment - Cервис оплаты товаров и услуг.
+# Webstore - Cервис оплаты товаров и услуг.
 ![CI](https://github.com/RuslanSibgatulin/Webstore/actions/workflows/test.yml/badge.svg)
 
 
@@ -27,6 +27,6 @@
 
 
 # Функционал
-- [Каталог товаров](http://127.0.0.1/item/)
+- [Каталог](http://127.0.0.1/)
 - [Админ-панель](http://127.0.0.1/admin/)
 
