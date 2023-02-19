@@ -35,15 +35,16 @@
             </td>
           </tr>
           {% endfor %}
-          
+          {% if order.amount %}
           <tr class="lead">
             <td>
               <td colspan="2"> Total amount</td>
             </td>
             <td>
-              ₽{{order.amount | divide:100 | floatformat:2}}
+                ₽{{order.amount | divide:100 | floatformat:2}}
             </td>
           </tr>
+          {% endif %}
 
         </tbody>
       </table>
@@ -57,7 +58,7 @@
           </svg>
         </button>
 
-        <button type="button" id="recalc-cart-button" class="btn btn-outline-success">
+        <button type="button" id="recalc-cart-button" class="btn btn-outline-success disabled">
           Recalculate
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-cart-check" viewBox="0 0 16 16">
             <path d="M11.354 6.354a.5.5 0 0 0-.708-.708L8 8.293 6.854 7.146a.5.5 0 1 0-.708.708l1.5 1.5a.5.5 0 0 0 .708 0l3-3z"/>
@@ -90,6 +91,16 @@
       .then(data => stripe.redirectToCheckout({ sessionId: data.session.id }));
   });
 
+  var buyButton = document.getElementById('clear-cart-button');
+  buyButton.addEventListener('click', function() {
+    fetch('', {
+      method: 'DELETE',
+      body: {},
+      headers: { "X-CSRFToken": '{{csrf_token}}' },
+    })
+      .then(response => response.json())
+      .then(data => location.reload());
+  });
 </script>
 
 

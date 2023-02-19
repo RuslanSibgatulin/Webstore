@@ -117,20 +117,24 @@ class OrderDetailView(DetailView, StripePayment):
         }
         return JsonResponse(json_session)
 
+    def delete(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        order = self.get_object()
+        deleted, obj = ItemsInOrder.objects.filter(order=order).delete()
+        logger.debug("%s cleared with. %s items deleted", order, deleted)
+        return JsonResponse({"cleared": deleted})
+
 
 class ItemBuyApiView(BaseDetailView, StripePayment):
     model = Item
     http_method_names = ["get"]
 
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        item = self.get_object()
         price_data = self.stripe_price(
-            self.object.name,
-            self.object.price,
-            self.object.description,
+            item.name,
+            item.price,
+            item.description,
             "rub",
         )
         session = self.create_checkout_session(price_data)
-        return {"session": session}
-
-    def render_to_response(self, context, **response_kwargs):
-        return JsonResponse(context)
+        return JsonResponse({"session": session})
