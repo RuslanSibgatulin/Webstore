@@ -4,7 +4,7 @@
 
 <div class="row py-lg-3 text-center">
   <h1 class="fw-light">Your cart</h1>
-  <p class="lead text-muted"></p>
+  <p class="lead text-muted">Created at: {{order.created_at}}</p>
 </div>
 
 <div class="album py-6 bg-light">
@@ -19,16 +19,16 @@
             </tr>
           </thead>
           <tbody>
-            {% for item in order.items.all  %}
+            {% for item in cart %}
             <tr>
               <td>
                 <p class="lead">{{ item.name }}</p>
               </td>
               <td>
-                ₽{{ item.price | divide:100 | floatformat:2}} 
+                ₽{{ item.price | divide:100 | floatformat:2}}
               </td>
               <td>
-                {{ item.quantity }}
+                <input class="form-control" min="1" type="number" aria-label="Quantity" name="{{ item.id }}_quantity" value={{ item.quantity }}>
               </td>
             </tr>
             {% endfor %}

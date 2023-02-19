@@ -3,13 +3,14 @@ from typing import Any, Dict
 
 import stripe
 from django.conf import settings
+from django.db.models import F
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse)
 from django.views.generic import ListView
 from django.views.generic.detail import BaseDetailView, DetailView
 
 from .forms import AddToCardForm
-from .models import Item, Order, OrderStatus
+from .models import Item, ItemsInOrder, Order, OrderStatus
 from .utils.utils import create_session
 
 logger = logging.getLogger(__name__)
@@ -80,11 +81,27 @@ class OrderDetailView(DetailView):
     template_name = "order/order_detail.html"
 
     def get_object(self) -> Order:
-        order, created = Order.objects.get_or_create(
-            session=self.request.session.session_key,
-            status=OrderStatus.CREATED
+        if self.request.session.session_key:
+            order, created = Order.objects.get_or_create(
+                session=self.request.session.session_key,
+                status=OrderStatus.CREATED
+            )
+            return order
+        return None
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        order = self.get_object()
+        context = super().get_context_data(**kwargs)
+        cart_items = ItemsInOrder.objects.filter(
+            order=order
+        ).values(
+            name=F("item__name"),
+            price=F("item__price"),
+            amount=F("item__price") * F("quantity")
         )
-        return order
+        context["cart"] = cart_items.values()
+        logger.debug(context)
+        return context
 
 
 class ItemBuyApiView(BaseDetailView):
