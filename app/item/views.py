@@ -1,9 +1,8 @@
 import logging
 from typing import Any, Dict
 
-import stripe
 from django.conf import settings
-from django.db.models import F
+from django.db.models import F, Sum
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse)
 from django.views.generic import ListView
@@ -11,6 +10,7 @@ from django.views.generic.detail import BaseDetailView, DetailView
 
 from .forms import AddToCardForm
 from .models import Item, ItemsInOrder, Order, OrderStatus
+from .services.stripe import StripePayment
 from .utils.utils import create_session
 
 logger = logging.getLogger(__name__)
@@ -75,14 +75,16 @@ class AddToCartApiView(BaseDetailView):
         return HttpResponseBadRequest(errors)
 
 
-class OrderDetailView(DetailView):
+class OrderDetailView(DetailView, StripePayment):
     model = Order
     context_object_name = "order"
     template_name = "order/order_detail.html"
 
     def get_object(self) -> Order:
         if self.request.session.session_key:
-            order, created = Order.objects.get_or_create(
+            order, created = Order.objects.annotate(
+                amount=Sum(F("items__price") * F("itemsinorder__quantity"))
+            ).get_or_create(
                 session=self.request.session.session_key,
                 status=OrderStatus.CREATED
             )
@@ -90,58 +92,44 @@ class OrderDetailView(DetailView):
         return None
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        order = self.get_object()
+        order = self.object
         context = super().get_context_data(**kwargs)
         cart_items = ItemsInOrder.objects.filter(
             order=order
         ).values(
             name=F("item__name"),
             price=F("item__price"),
-            amount=F("item__price") * F("quantity")
+            sum=F("item__price") * F("quantity"),
         )
         context["cart"] = cart_items.values()
-        logger.debug(context)
+        context["STRIPE_PUBLIC"] = settings.STRIPE_PUBLIC
         return context
 
+    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        order = self.get_object()
+        price_data = self.stripe_price(
+            name=f"Order #{order.pk}",
+            amount=order.amount,
+            currency="rub"
+        )
+        json_session = {
+            "session": self.create_checkout_session(price_data)
+        }
+        return JsonResponse(json_session)
 
-class ItemBuyApiView(BaseDetailView):
+
+class ItemBuyApiView(BaseDetailView, StripePayment):
     model = Item
     http_method_names = ["get"]
 
-    def get_price_json(self) -> Dict:
-        item = {
-            "quantity": 1,
-            "price_data": {
-                "currency": "rub",
-                "unit_amount": self.object.price,
-                "product_data": {
-                    "name": self.object.name,
-                    "description": self.object.description or "No description",
-                },
-            },
-        }
-        return item
-
-    def create_checkout_session(self) -> Any:
-        try:
-            success_url = self.request.META.get("HTTP_REFERER") + "?session_id={CHECKOUT_SESSION_ID}"
-
-            checkout_session = stripe.checkout.Session.create(
-                api_key=settings.STRIPE_SECRET,
-                line_items=[self.get_price_json()],
-                mode="payment",
-                success_url=success_url,
-                cancel_url=self.request.META.get("HTTP_REFERER"),
-            )
-        except Exception as err:
-            logger.error("Create checkout session error: %s", err)
-            return None
-
-        logger.debug("Checkout session created: %s", checkout_session)
-        return checkout_session
-
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        session = self.create_checkout_session()
+        price_data = self.stripe_price(
+            self.object.name,
+            self.object.price,
+            self.object.description,
+            "rub",
+        )
+        session = self.create_checkout_session(price_data)
         return {"session": session}
 
     def render_to_response(self, context, **response_kwargs):
