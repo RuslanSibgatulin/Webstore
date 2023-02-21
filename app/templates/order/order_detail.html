@@ -25,13 +25,13 @@
               <p class="lead">{{ item.name }}</p>
             </td>
             <td>
-              ₽{{ item.price | divide:100 | floatformat:2}}
+              ₽{{ item.price | divide:100 | floatformat:2 }}
             </td>
             <td>
               <input class="form-control" min="1" type="number" aria-label="Quantity" name="{{ item.id }}_quantity" value={{ item.quantity }}>
             </td>
             <td>
-              ₽{{ item.sum | divide:100 | floatformat:2}}
+              ₽{{ item.sum | divide:100 | floatformat:2 }}
             </td>
           </tr>
           {% endfor %}
@@ -41,7 +41,7 @@
               <td colspan="2"> Total amount</td>
             </td>
             <td>
-                ₽{{order.amount | divide:100 | floatformat:2}}
+                ₽{{ order.amount | divide:100 | floatformat:2 }}
             </td>
           </tr>
           {% endif %}
@@ -74,6 +74,14 @@
         </button>
       </div>
     </div>
+
+    {% if payment and payment.payment_status == "paid" %}
+      <div class="row m-2 text-center">
+        <p class="lead">Thank you for shopping, {{ payment.customer_details.name }}!</p>
+        <p class="lead">Payment status: {{ payment.status }}!</p>
+      </div>
+    {% endif %}
+
   </div>
 </div>
 

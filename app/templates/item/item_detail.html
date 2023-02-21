@@ -2,7 +2,7 @@
 {% load item_extras %}
 {% block content %}
 
-<div class="container-fluid col-4 ">
+<div class="container-fluid col-4">
   <main>
     <div class="row m-2 text-center">
       <h2>{{ item.name }}</h2>
@@ -24,6 +24,12 @@
         </button>
       </div>
     </div>
+
+    {% if payment and payment.payment_status == "paid" %}
+      <div class="row m-2 text-center">
+        <p class="lead">Thank you for shopping, {{ payment.customer_details.name }}!</p>
+      </div>
+    {% endif %}
 
   </main>
 </div>
