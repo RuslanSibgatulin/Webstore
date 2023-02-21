@@ -12,7 +12,7 @@
 
 # Запуск приложения
 ## Клонировать репозиторий
-    git@github.com:RuslanSibgatulin/Webstore.git
+    git clone https://github.com/RuslanSibgatulin/Webstore.git
 
 ## Переменные окружения
 Подготовить файлы с переменными окружения по аналогии с файлами `docker/envs/*.example` и пересохранить в файлы `*.env`
