@@ -1,15 +1,16 @@
 import logging
 from typing import Any, Dict
 
-import stripe
 from django.conf import settings
+from django.db.models import F
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse)
 from django.views.generic import ListView
 from django.views.generic.detail import BaseDetailView, DetailView
 
 from .forms import AddToCardForm
-from .models import Item, Order, OrderStatus
+from .models import Item, ItemsInOrder, Order, OrderStatus
+from .services.stripe import StripePaymentMixin
 from .utils.utils import create_session
 
 logger = logging.getLogger(__name__)
@@ -27,7 +28,7 @@ class ItemListView(ListView):
         return super().get(request, *args, **kwargs)
 
 
-class ItemDetailView(DetailView):
+class ItemDetailView(DetailView, StripePaymentMixin):
     model = Item
     context_object_name = "item"
     template_name = "item/item_detail.html"
@@ -35,6 +36,7 @@ class ItemDetailView(DetailView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context["STRIPE_PUBLIC"] = settings.STRIPE_PUBLIC
+        context["payment"] = self.get_payment_session()
         return context
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -74,58 +76,70 @@ class AddToCartApiView(BaseDetailView):
         return HttpResponseBadRequest(errors)
 
 
-class OrderDetailView(DetailView):
+class OrderDetailView(DetailView, StripePaymentMixin):
     model = Order
     context_object_name = "order"
     template_name = "order/order_detail.html"
 
     def get_object(self) -> Order:
-        order, created = Order.objects.get_or_create(
-            session=self.request.session.session_key,
-            status=OrderStatus.CREATED
+        if self.request.session.session_key:
+            order, created = Order.objects.get_or_create(
+                session=self.request.session.session_key,
+                status=OrderStatus.CREATED
+            )
+            return order
+        return None
+
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        order = self.object
+        context = super().get_context_data(**kwargs)
+        cart_items = ItemsInOrder.objects.filter(
+            order=order
+        ).values(
+            name=F("item__name"),
+            price=F("item__price"),
+            sum=F("item__price") * F("quantity"),
         )
-        return order
+        payment_session = self.get_payment_session()
+        if payment_session and payment_session["status"] == "complete":
+            order.payment_complete()
+
+        context["cart"] = cart_items.values()
+        context["STRIPE_PUBLIC"] = settings.STRIPE_PUBLIC
+        context["payment"] = payment_session
+        return context
+
+    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        order = self.get_object()
+        if order.items.count():
+            price_data = self.stripe_price(
+                name=f"Order #{order.pk}",
+                amount=order.amount,
+            )
+            session = {
+                "session": self.create_checkout_session(price_data)
+            }
+            return JsonResponse(session)
+
+        return HttpResponseBadRequest("Empty cart")
+
+    def delete(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        order = self.get_object()
+        deleted, obj = ItemsInOrder.objects.filter(order=order).delete()
+        logger.debug("%s cleared with. %s items deleted", order, deleted)
+        return JsonResponse({"cleared": deleted})
 
 
-class ItemBuyApiView(BaseDetailView):
+class ItemBuyApiView(BaseDetailView, StripePaymentMixin):
     model = Item
     http_method_names = ["get"]
 
-    def get_price_json(self) -> Dict:
-        item = {
-            "quantity": 1,
-            "price_data": {
-                "currency": "rub",
-                "unit_amount": self.object.price,
-                "product_data": {
-                    "name": self.object.name,
-                    "description": self.object.description or "No description",
-                },
-            },
-        }
-        return item
-
-    def create_checkout_session(self) -> Any:
-        try:
-            success_url = self.request.META.get("HTTP_REFERER") + "?session_id={CHECKOUT_SESSION_ID}"
-
-            checkout_session = stripe.checkout.Session.create(
-                api_key=settings.STRIPE_SECRET,
-                line_items=[self.get_price_json()],
-                mode="payment",
-                success_url=success_url,
-                cancel_url=self.request.META.get("HTTP_REFERER"),
-            )
-        except Exception as err:
-            logger.error("Create checkout session error: %s", err)
-            return None
-
-        logger.debug("Checkout session created: %s", checkout_session)
-        return checkout_session
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        session = self.create_checkout_session()
-        return {"session": session}
-
-    def render_to_response(self, context, **response_kwargs):
-        return JsonResponse(context)
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        item = self.get_object()
+        price_data = self.stripe_price(
+            item.name,
+            item.price,
+            item.description
+        )
+        session = self.create_checkout_session(price_data)
+        return JsonResponse({"session": session})

@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import F, Sum
 from django.utils.translation import gettext_lazy as _
 
 
@@ -40,6 +41,17 @@ class Order(models.Model):
 
     def __str__(self) -> str:
         return f"Order #{self.id}"
+
+    @property
+    def amount(self) -> int:
+        return self.items.annotate(
+            item_sum=F("price") * F("itemsinorder__quantity"),
+        ).aggregate(amount=Sum("item_sum"))["amount"]
+
+    def payment_complete(self):
+        if self.status == OrderStatus.CREATED:
+            self.status = OrderStatus.PAYED
+            self.save()
 
 
 class ItemsInOrder(models.Model):

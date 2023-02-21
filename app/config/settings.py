@@ -1,16 +1,26 @@
 import os
+import secrets
 from pathlib import Path
 
 from .logger_conf import LOGGING
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+# Deploy settings
+SECURE_SSL_REDIRECT = True
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_SECONDS = 3600
+SECURE_HSTS_PRELOAD = True
+# Secrets
+SECRET_KEY = secrets.token_urlsafe(50)
 STRIPE_PUBLIC = os.getenv("STRIPE_PUBLIC")
 STRIPE_SECRET = os.getenv("STRIPE_SECRET")
 
-DEBUG = os.environ.get("DJANGO_DEBUG", False) == "True"
+STRIPE_CURRENCY = os.environ.get("STRIPE_CURRENCY", "USD")
 
+DEBUG = os.environ.get("DJANGO_DEBUG", False) == "True"
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 INSTALLED_APPS = [

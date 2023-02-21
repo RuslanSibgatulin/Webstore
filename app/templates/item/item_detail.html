@@ -2,11 +2,11 @@
 {% load item_extras %}
 {% block content %}
 
-<div class="container-fluid col-4 ">
+<div class="container-fluid col-4">
   <main>
     <div class="row m-2 text-center">
       <h2>{{ item.name }}</h2>
-      <h1 class="card-title pricing-card-title">₽{{ item.price | divide:100 | floatformat:2}}</h1>
+      <h1 class="card-title pricing-card-title">{{ item.price | divide:100 | floatformat:2 | currency }}</h1>
       <p class="lead">{{ item.description }}</p>
       <div class="btn-group" role="group" aria-label="Purchase button group">
         <button type="button" id="buy-button" class="btn btn-primary">
@@ -24,6 +24,12 @@
         </button>
       </div>
     </div>
+
+    {% if payment and payment.payment_status == "paid" %}
+      <div class="row m-2 text-center">
+        <p class="lead">Thank you for shopping, {{ payment.customer_details.name }}!</p>
+      </div>
+    {% endif %}
 
   </main>
 </div>

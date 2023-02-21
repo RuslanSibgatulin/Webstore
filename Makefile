@@ -1,7 +1,7 @@
 ## ----------------------------------------------------------------------
 ## Makefile is to manage Django project.
 ## ----------------------------------------------------------------------
-include docker/envs/payment.env
+include docker/envs/webstore.env
 export
 
 compose_files=-f docker-compose.yml
