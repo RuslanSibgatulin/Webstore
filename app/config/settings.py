@@ -7,7 +7,7 @@ from .logger_conf import LOGGING
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Deploy settings
-SECURE_SSL_REDIRECT = True
+# SECURE_SSL_REDIRECT = True
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
@@ -21,7 +21,7 @@ STRIPE_SECRET = os.getenv("STRIPE_SECRET")
 STRIPE_CURRENCY = os.environ.get("STRIPE_CURRENCY", "USD")
 
 DEBUG = os.environ.get("DJANGO_DEBUG", False) == "True"
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", ]
 
 INSTALLED_APPS = [
     "django.contrib.admin",

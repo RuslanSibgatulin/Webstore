@@ -16,11 +16,11 @@ stop:
 		cd docker && DOCKER_BUILDKIT=1 docker-compose $(compose_files) down
 
 init:  ## First and full initialization. Create database, superuser and collect static files
-		docker exec -it payment_django bash -c \
+		docker exec -it webstore_django bash -c \
 		'python manage.py migrate && python manage.py createsuperuser --noinput && python manage.py collectstatic --noinput'
 
 loaddata:  ## Load demo data
-		docker exec -it payment_django bash -c \
+		docker exec -it webstore_django bash -c \
 		'python manage.py loaddata fixtures/demo_data.json'
 
 
