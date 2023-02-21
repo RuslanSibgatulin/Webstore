@@ -1,0 +1,6 @@
+{% if payment and payment.payment_status == "paid" %}
+<div class="row m-2 text-center bg-info">
+  <p class="lead">Thank you for shopping, {{ payment.customer_details.name }}!</p>
+  <p class="lead">Payment status: {{ payment.status }}!</p>
+</div>
+{% endif %}
