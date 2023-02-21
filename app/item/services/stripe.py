@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 class StripePaymentMixin:
     api_secret = settings.STRIPE_SECRET
+    currency = settings.STRIPE_CURRENCY
     session_arg = "session_id"
 
     def create_checkout_session(self, price_data: Dict) -> Any:
@@ -44,14 +45,13 @@ class StripePaymentMixin:
 
             return session
 
-    @staticmethod
-    def stripe_price(name: str, amount: int, description: str = None, currency: str = "usd") -> Dict:
+    def stripe_price(self, name: str, amount: int, description: str = None) -> Dict:
         """Prepares Stripe formatted price data
         """
         price_data = {
             "quantity": 1,
             "price_data": {
-                "currency": currency,
+                "currency": self.currency,
                 "unit_amount": amount,
                 "product_data": {
                     "name": name,

@@ -1,4 +1,5 @@
 from django import template
+from django.conf import settings
 
 register = template.Library()
 
@@ -9,3 +10,8 @@ def divide(value, arg):
         return int(value) / int(arg)
     except (ValueError, ZeroDivisionError):
         return None
+
+
+@register.filter
+def currency(value):
+    return f"{value} {settings.STRIPE_CURRENCY}"

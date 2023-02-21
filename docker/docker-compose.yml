@@ -8,13 +8,13 @@ services:
   postgres:
     container_name: payment_postgres
     image: postgres:14.1-alpine
-    env_file: envs/payment.env
+    env_file: envs/webstore.env
     volumes:
       - payment_data/:/var/lib/postgresql/data/
 
   backend:
     container_name: payment_django
-    env_file: envs/payment.env
+    env_file: envs/webstore.env
     build:
       context: ..
       dockerfile: docker/dockerfiles/PaymentDockerfile

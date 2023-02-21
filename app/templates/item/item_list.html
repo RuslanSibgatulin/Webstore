@@ -20,7 +20,7 @@
                     <h4 class="my-0 fw-normal">{{ item.name }}</h4>
                   </div>
                   <div class="card-body">
-                  <h2 class="card-title pricing-card-title">₽{{ item.price | divide:100 | floatformat:2}}</h2>
+                  <h2 class="card-title pricing-card-title">{{ item.price | divide:100 | floatformat:2 | currency}}</h2>
                   <p>{{ item.description }}</p>
                   <a href={% url "items:item-detail" item.pk %} class="stretched-link"></a>
                   </div>

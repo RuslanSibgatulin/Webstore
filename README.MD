@@ -1,6 +1,7 @@
-# Webstore - Cервис оплаты товаров и услуг.
+# Webstore - интернет магазин.
 ![CI](https://github.com/RuslanSibgatulin/Webstore/actions/workflows/test.yml/badge.svg)
 
+Каталог товаров с быстрой покупкой через сторонюю платежную систему.
 
 ## Используемые технологии
 - Код приложения на Python

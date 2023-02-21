@@ -115,12 +115,11 @@ class OrderDetailView(DetailView, StripePaymentMixin):
             price_data = self.stripe_price(
                 name=f"Order #{order.pk}",
                 amount=order.amount,
-                currency="rub"
             )
-            json_session = {
+            session = {
                 "session": self.create_checkout_session(price_data)
             }
-            return JsonResponse(json_session)
+            return JsonResponse(session)
 
         return HttpResponseBadRequest("Empty cart")
 
@@ -140,8 +139,7 @@ class ItemBuyApiView(BaseDetailView, StripePaymentMixin):
         price_data = self.stripe_price(
             item.name,
             item.price,
-            item.description,
-            "rub",
+            item.description
         )
         session = self.create_checkout_session(price_data)
         return JsonResponse({"session": session})
