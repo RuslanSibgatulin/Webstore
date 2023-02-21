@@ -1,12 +1,11 @@
 import os
-import secrets
 from pathlib import Path
 
 from .logger_conf import LOGGING
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = secrets.token_urlsafe(50)
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 STRIPE_PUBLIC = os.environ.get("STRIPE_PUBLIC")
 STRIPE_SECRET = os.environ.get("STRIPE_SECRET")
 STRIPE_CURRENCY = os.environ.get("STRIPE_CURRENCY", "USD")
@@ -14,7 +13,6 @@ STRIPE_CURRENCY = os.environ.get("STRIPE_CURRENCY", "USD")
 DEBUG = True
 
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
-
 
 INSTALLED_APPS = [
     "django.contrib.admin",

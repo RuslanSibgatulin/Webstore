@@ -1,5 +1,4 @@
 import os
-import secrets
 from pathlib import Path
 
 from .logger_conf import LOGGING
@@ -14,7 +13,7 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_SECONDS = 3600
 SECURE_HSTS_PRELOAD = True
 # Secrets
-SECRET_KEY = secrets.token_urlsafe(50)
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 STRIPE_PUBLIC = os.getenv("STRIPE_PUBLIC")
 STRIPE_SECRET = os.getenv("STRIPE_SECRET")
 
