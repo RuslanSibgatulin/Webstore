@@ -15,7 +15,12 @@
     git clone https://github.com/RuslanSibgatulin/Webstore.git
 
 ## Переменные окружения
-Подготовить файлы с переменными окружения по аналогии с файлами `docker/envs/*.example` и пересохранить в файлы `*.env`
+Подготовить файлы с переменными окружения по аналогии с файлами `docker/envs/*.example` и пересохранить в файлы `*.env`.
+Обязательно заполнить следующие параметры:
+
+    DJANGO_SECRET_KEY - рандомная строка длиной 50 символов
+    STRIPE_PUBLIC - публичный ключ https://dashboard.stripe.com/developers
+    STRIPE_SECRET - секретный ключ вашего аккаунта stripe.com
 
 ## Запуск
     make start
@@ -28,6 +33,6 @@
 
 
 # Функционал
-- [Каталог](http://127.0.0.1/items/)
-- [Админ-панель](http://127.0.0.1/admin/)
+- [Каталог](http://<your-domain>/items/)
+- [Админ-панель](http://<your-domain>/admin/)
 
