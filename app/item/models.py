@@ -45,7 +45,7 @@ class Order(models.Model):
     @property
     def amount(self) -> int:
         return self.items.annotate(
-            item_sum=F("price") * F("itemsinorder__quantity")
+            item_sum=F("price") * F("itemsinorder__quantity"),
         ).aggregate(amount=Sum("item_sum"))["amount"]
 
     def payment_complete(self):

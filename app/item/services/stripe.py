@@ -3,11 +3,12 @@ from typing import Any, Dict
 
 import stripe
 from django.conf import settings
+from django.views.generic import View
 
 logger = logging.getLogger(__name__)
 
 
-class StripePaymentMixin:
+class StripePaymentMixin(View):
     api_secret = settings.STRIPE_SECRET
     currency = settings.STRIPE_CURRENCY
     session_arg = "session_id"
