@@ -15,7 +15,7 @@ class StripePaymentMixin(View):
 
     def create_checkout_session(self, price_data: Dict) -> Any:
         try:
-            full_path = self.request.META.get("HTTP_REFERER").split("?")[0]
+            full_path = (self.request.META.get("HTTP_REFERER") or "http://localhost").split("?")[0]
             success_url = "{0}?{1}={2}".format(
                 full_path,
                 self.session_arg,

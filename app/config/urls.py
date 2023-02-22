@@ -5,5 +5,5 @@ from item.views import ItemBuyApiView
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("items/", include("item.urls", namespace="items")),
-    path("buy/<int:pk>/", ItemBuyApiView.as_view()),
+    path("buy/<int:pk>/", ItemBuyApiView.as_view(), name="buy-now"),
 ]

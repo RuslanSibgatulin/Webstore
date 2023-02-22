@@ -36,6 +36,9 @@ runserver:
 shell:
 		cd app && python manage.py shell --settings=config.settings_dev
 
+test:
+		cd app && python manage.py test --settings=config.settings_dev
+
 lint-install:
 		pip install lxml mypy wemake-python-styleguide flake8-html types-requests types-pytz
 
